@@ -1,0 +1,1 @@
+export {default as ThreeJsScene} from "./src/ThreeJsScene"
