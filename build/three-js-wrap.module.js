@@ -49497,6 +49497,36 @@ class ThreeJsScene {
     }
 }
 
+class ThreeJsTextureLoader {
+    constructor() {
+        this.loadingManager = new LoadingManager();
+        this.textureLoader = new TextureLoader(this.loadingManager);
+    }
+    static getInstance() {
+        if (!ThreeJsTextureLoader.instance) {
+            ThreeJsTextureLoader.instance = new ThreeJsTextureLoader();
+        }
+        return ThreeJsTextureLoader.instance;
+    }
+    getTextures(textures) {
+        return textures.map((texture) => {
+            return this.textureLoader.load(texture);
+        });
+    }
+    setOnStart(onStart) {
+        this.loadingManager.onStart = onStart;
+    }
+    setOnLoad(onLoad) {
+        this.loadingManager.onLoad = onLoad;
+    }
+    setOnProgress(onProgress) {
+        this.loadingManager.onProgress = onProgress;
+    }
+    setOnError(onError) {
+        this.loadingManager.onError = onError;
+    }
+}
+
 // This set of controls performs orbiting, dollying (zooming), and panning.
 // Unlike TrackballControls, it maintains the "up" direction object.up (+Y by default).
 //
@@ -50721,4 +50751,4 @@ var OrbitControls$1 = /*#__PURE__*/Object.freeze({
 	MapControls: MapControls
 });
 
-export { ThreeJsScene };
+export { ThreeJsScene, ThreeJsTextureLoader };

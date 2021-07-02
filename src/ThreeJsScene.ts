@@ -2,6 +2,9 @@ import * as THREE from 'three';
 import { getDevicePixelRatio } from './utils';
 import { sceneDefaults, events } from './constants';
 
+/**
+ * Wrapper for the ThreeJs Scene.
+ */
 export default class ThreeJsScene {
   public scene: THREE.Scene;
   public renderer: THREE.WebGLRenderer;
@@ -46,17 +49,26 @@ export default class ThreeJsScene {
     this.loop = this.loop.bind(this);
   }
 
-  //static THREE instance
+  /**
+   * Returns THREE library
+   */
   public get THREE() {
     return THREE;
   }
 
+  /**
+   * Starts the scene.
+   */
   start() {
     this.renderer.render(this.scene, this.camera);
     this.loop();
     this.loadControls();
   }
 
+  /**
+   * Builds the renderer.
+   * @returns
+   */
   buildRenderer(): THREE.WebGLRenderer {
     const renderer = new THREE.WebGLRenderer({
       canvas: this.canvas
@@ -66,6 +78,10 @@ export default class ThreeJsScene {
     return renderer;
   }
 
+  /**
+   * Builds the sizes.
+   * @returns
+   */
   buildSizes() {
     console.log(this.isFullScreen);
 
@@ -84,6 +100,10 @@ export default class ThreeJsScene {
     return sizes;
   }
 
+  /**
+   * Builds the camera.
+   * @returns
+   */
   buildCamera(): THREE.PerspectiveCamera {
     const camera = new THREE.PerspectiveCamera(
       this.cameraProps.fov,
@@ -94,10 +114,17 @@ export default class ThreeJsScene {
     return camera;
   }
 
+  /**
+   * Adds an object to the scene.
+   * @param obj
+   */
   add(obj: any) {
     this.scene.add(obj);
   }
 
+  /**
+   * The animation loop.
+   */
   loop() {
     const elapsedTime = this.clock.getElapsedTime();
 
@@ -113,6 +140,9 @@ export default class ThreeJsScene {
     window.requestAnimationFrame(this.loop);
   }
 
+  /**
+   * Load controls.
+   */
   loadControls() {
     if (this.useOrbitControls) {
       import('three/examples/jsm/controls/OrbitControls.js').then(
@@ -126,6 +156,9 @@ export default class ThreeJsScene {
     }
   }
 
+  /**
+   * Adds event listeners.
+   */
   addEventListeners() {
     window.addEventListener(events.RESIZE, () => {
       const newSizes = this.buildSizes();

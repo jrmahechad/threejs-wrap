@@ -9,7 +9,10 @@
   <body>
     <canvas class="webgl"></canvas>
     <script type="module">
-      import { ThreeJsScene } from '../build/three-js-wrap.module.js';
+      import {
+        ThreeJsScene,
+        ThreeJsTextureLoader
+      } from '../build/three-js-wrap.module.js';
       const canvas = document.querySelector('canvas.webgl');
       const scene = new ThreeJsScene(canvas, { isFullScreen: true });
       console.log(scene);
@@ -19,9 +22,17 @@
       const material = new scene.THREE.MeshBasicMaterial({ color: 0xff0000 });
       const mesh = new scene.THREE.Mesh(geometry, material);
       scene.add(mesh);
-      //   console.log(scene.camera.position.z = );
+
       scene.camera.position.z = 3;
       scene.start();
+
+      const loader = ThreeJsTextureLoader.getInstance();
+      const textures = loader.getTextures([
+        './src/textures/t1.png',
+        './src/textures/t2.png'
+      ]);
+
+      console.log(textures);
     </script>
   </body>
 </html>
