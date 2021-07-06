@@ -27,10 +27,7 @@
   <body>
     <canvas class="webgl"></canvas>
     <script type="module">
-      import {
-        ThreeJsScene,
-        ThreeJsTextureLoader
-      } from '../build/three-js-wrap.module.js';
+      import { ThreeJsScene, ThreeJsTextureLoader } from '../build/index.js';
       const canvas = document.querySelector('canvas.webgl');
       const scene = new ThreeJsScene(canvas, { isFullScreen: true });
       console.log('scene', scene);

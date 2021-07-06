@@ -10,8 +10,9 @@ export default [
       {
         format: 'esm',
         // dir: 'build',
-        inlineDynamicImports: true,
-        file: 'build/three-js-wrap.module.js',
+        // inlineDynamicImports: true,
+        // file: 'build/three-js-wrap.module.js',
+        dir: 'build',
         exports: 'named'
       }
     ]

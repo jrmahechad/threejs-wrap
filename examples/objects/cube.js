@@ -1,4 +1,4 @@
-import { ThreeJsObject } from '../../build/three-js-wrap.module.js';
+import { ThreeJsObject } from '../../build/index.js';
 
 //normal box
 export default class Cube extends ThreeJsObject {

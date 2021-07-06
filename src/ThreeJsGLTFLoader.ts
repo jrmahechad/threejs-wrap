@@ -1,5 +1,5 @@
 import { GLTFLoader, GLTF } from 'three/examples/jsm/loaders/GLTFLoader.js';
-import { DRACOLoader } from 'three/examples/jsm/loaders/DRACOLoader';
+// import { DRACOLoader } from 'three/examples/jsm/loaders/DRACOLoader';
 
 /**
  * Wrapper for
@@ -7,11 +7,9 @@ import { DRACOLoader } from 'three/examples/jsm/loaders/DRACOLoader';
 export default class ThreeJsGLTFLoader {
   private static instance: ThreeJsGLTFLoader;
   private gltfLoader: GLTFLoader;
-  private dracoLoader: DRACOLoader | null;
 
   constructor() {
     this.gltfLoader = new GLTFLoader();
-    this.dracoLoader = null;
   }
 
   /**
@@ -43,8 +41,10 @@ export default class ThreeJsGLTFLoader {
   }
 
   setDracoLoader(decoderPath: string) {
-    this.dracoLoader = new DRACOLoader();
-    this.dracoLoader.setDecoderPath(decoderPath);
-    this.gltfLoader.setDRACOLoader(this.dracoLoader);
+    import('three/examples/jsm/loaders/DRACOLoader').then(({ DRACOLoader }) => {
+      const dracoLoader = new DRACOLoader();
+      dracoLoader.setDecoderPath(decoderPath);
+      this.gltfLoader.setDRACOLoader(dracoLoader);
+    });
   }
 }
