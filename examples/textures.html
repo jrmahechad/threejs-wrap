@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>ThreeJs Wrap</title>
+  </head>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+    }
+
+    html,
+    body {
+      overflow: hidden;
+    }
+
+    .webgl {
+      position: fixed;
+      top: 0;
+      left: 0;
+      outline: none;
+    }
+  </style>
+  <body>
+    <canvas class="webgl"></canvas>
+    <script type="module">
+      import {
+        ThreeJsScene,
+        ThreeJsTextureLoader
+      } from '../build/three-js-wrap.module.js';
+      const canvas = document.querySelector('canvas.webgl');
+      const scene = new ThreeJsScene(canvas, { isFullScreen: true });
+      console.log('scene', scene);
+
+      scene.camera.position.z = 3;
+      scene.camera.position.y = 1;
+      scene.start();
+
+      const loader = ThreeJsTextureLoader.getInstance();
+      const [texture1, texture2] = loader.getTextures([
+        './textures/t1.png',
+        './textures/t2.png'
+      ]);
+
+      // Object
+      const geometry = new scene.THREE.BoxGeometry(1, 1, 1);
+      const material = new scene.THREE.MeshBasicMaterial({ map: texture1 });
+      const mesh = new scene.THREE.Mesh(geometry, material);
+      scene.add(mesh);
+    </script>
+  </body>
+</html>

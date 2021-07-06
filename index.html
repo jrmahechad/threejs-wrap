@@ -7,32 +7,11 @@
     <title>ThreeJs Wrap</title>
   </head>
   <body>
-    <canvas class="webgl"></canvas>
-    <script type="module">
-      import {
-        ThreeJsScene,
-        ThreeJsTextureLoader
-      } from '../build/three-js-wrap.module.js';
-      const canvas = document.querySelector('canvas.webgl');
-      const scene = new ThreeJsScene(canvas, { isFullScreen: true });
-      console.log(scene);
-
-      // Object
-      const geometry = new scene.THREE.BoxGeometry(1, 1, 1);
-      const material = new scene.THREE.MeshBasicMaterial({ color: 0xff0000 });
-      const mesh = new scene.THREE.Mesh(geometry, material);
-      scene.add(mesh);
-
-      scene.camera.position.z = 3;
-      scene.start();
-
-      const loader = ThreeJsTextureLoader.getInstance();
-      const textures = loader.getTextures([
-        './src/textures/t1.png',
-        './src/textures/t2.png'
-      ]);
-
-      console.log(textures);
-    </script>
+    <ul>
+      <li><a href="./examples/basic.html">Basic</a></li>
+      <li><a href="./examples/textures.html">Textures</a></li>
+      <li><a href="./examples/model.html">Model</a></li>
+      <li><a href="./examples/model-draco.html">Model Draco</a></li>
+    </ul>
   </body>
 </html>

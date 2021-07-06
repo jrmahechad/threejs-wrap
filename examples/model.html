@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>ThreeJs Wrap</title>
+  </head>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+    }
+
+    html,
+    body {
+      overflow: hidden;
+    }
+
+    .webgl {
+      position: fixed;
+      top: 0;
+      left: 0;
+      outline: none;
+    }
+  </style>
+  <body>
+    <canvas class="webgl"></canvas>
+    <script type="module">
+      import {
+        ThreeJsScene,
+        ThreeJsGLTFLoader
+      } from '../build/three-js-wrap.module.js';
+      const canvas = document.querySelector('canvas.webgl');
+      const scene = new ThreeJsScene(canvas, { isFullScreen: true });
+      const THREE = scene.THREE;
+      console.log('scene', scene);
+
+      scene.camera.position.set(2, 3, 3);
+      scene.start();
+
+      const gltfLoader = ThreeJsGLTFLoader.getInstance();
+      gltfLoader.getModel('./models/Fox/glTF/Fox.gltf', (gltf) => {
+        gltf.scene.scale.set(0.025, 0.025, 0.025);
+        scene.add(gltf.scene);
+      });
+
+      /**
+       * Lights
+       */
+      const ambientLight = new THREE.AmbientLight(0xffffff, 0.8);
+      scene.add(ambientLight);
+
+      const directionalLight = new THREE.DirectionalLight(0xffffff, 0.6);
+      directionalLight.castShadow = true;
+      directionalLight.shadow.mapSize.set(1024, 1024);
+      directionalLight.shadow.camera.far = 15;
+      directionalLight.shadow.camera.left = -7;
+      directionalLight.shadow.camera.top = 7;
+      directionalLight.shadow.camera.right = 7;
+      directionalLight.shadow.camera.bottom = -7;
+      directionalLight.position.set(5, 5, 5);
+      scene.add(directionalLight);
+    </script>
+  </body>
+</html>

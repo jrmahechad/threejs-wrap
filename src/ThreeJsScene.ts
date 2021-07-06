@@ -83,8 +83,6 @@ export default class ThreeJsScene {
    * @returns
    */
   buildSizes() {
-    console.log(this.isFullScreen);
-
     const sizes = this.isFullScreen
       ? {
           width: window.innerWidth,
@@ -94,8 +92,6 @@ export default class ThreeJsScene {
           width: this.canvas.offsetWidth,
           height: this.canvas.offsetHeight
         };
-
-    console.log(sizes);
 
     return sizes;
   }
@@ -147,7 +143,6 @@ export default class ThreeJsScene {
     if (this.useOrbitControls) {
       import('three/examples/jsm/controls/OrbitControls.js').then(
         ({ OrbitControls }) => {
-          console.log(OrbitControls);
           // Controls
           this.controls = new OrbitControls(this.camera, this.canvas);
           this.controls.enableDamping = true;
@@ -162,7 +157,6 @@ export default class ThreeJsScene {
   addEventListeners() {
     window.addEventListener(events.RESIZE, () => {
       const newSizes = this.buildSizes();
-      console.log(this.rendererSizes);
 
       if (
         newSizes.width === this.rendererSizes.width &&
