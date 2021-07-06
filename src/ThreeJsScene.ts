@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import { getDevicePixelRatio } from './utils';
 import { sceneDefaults, events } from './constants';
+import { default as ThreeJsObject } from './ThreeJsObject';
 
 /**
  * Wrapper for the ThreeJs Scene.
@@ -16,6 +17,7 @@ export default class ThreeJsScene {
   public clock: THREE.Clock;
   public controls: any;
   public useOrbitControls: boolean;
+  private observers: ThreeJsObject[];
 
   constructor(
     canvas: HTMLCanvasElement,
@@ -32,6 +34,7 @@ export default class ThreeJsScene {
     this.isFullScreen = isFullScreen;
     this.cameraProps = cameraProps;
     this.useOrbitControls = useOrbitControls;
+    this.observers = [];
 
     this.scene = new THREE.Scene();
     this.canvas = canvas;
@@ -115,6 +118,11 @@ export default class ThreeJsScene {
    * @param obj
    */
   add(obj: any) {
+    if (obj instanceof ThreeJsObject) {
+      this.scene.add(obj.object3d);
+      return;
+    }
+
     this.scene.add(obj);
   }
 
@@ -128,6 +136,8 @@ export default class ThreeJsScene {
     if (this.controls) {
       this.controls.update();
     }
+
+    this.observers.forEach((observer) => observer.update(elapsedTime));
 
     // Render
     this.renderer.render(this.scene, this.camera);
@@ -178,5 +188,13 @@ export default class ThreeJsScene {
         );
       this.renderer.setPixelRatio(getDevicePixelRatio());
     });
+  }
+
+  subscribe(obj: ThreeJsObject) {
+    this.observers.push(obj);
+  }
+
+  unsubscribe(obj: ThreeJsObject) {
+    this.observers = this.observers.filter((subscriber) => subscriber !== obj);
   }
 }

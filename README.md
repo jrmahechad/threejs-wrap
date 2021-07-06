@@ -1,5 +1,9 @@
 # threejs-wrap
 
+## Inspiration
+
+Work inspired by [ThreeJs-Wrapper](https://github.com/lostways/three-js-wrapper)
+
 ## Run the project
 
 Start by installing dependencies

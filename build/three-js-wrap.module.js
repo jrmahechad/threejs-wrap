@@ -49404,6 +49404,27 @@ const events = {
 };
 
 /**
+ *
+ */
+class ThreeJSObject {
+    constructor(params = {}) {
+        this.params = params;
+        this.THREE = THREE;
+        this.object3d = this.create();
+    }
+    /**
+     * Override to create Object3D
+     */
+    create() {
+        throw new Error('ThreeJSObject must have a create method');
+    }
+    /**
+     * Override to define animations
+     */
+    update(elapsedTime) { }
+}
+
+/**
  * Wrapper for the ThreeJs Scene.
  */
 class ThreeJsScene {
@@ -49412,6 +49433,7 @@ class ThreeJsScene {
         this.isFullScreen = isFullScreen;
         this.cameraProps = cameraProps;
         this.useOrbitControls = useOrbitControls;
+        this.observers = [];
         this.scene = new Scene();
         this.canvas = canvas;
         this.clock = new Clock();
@@ -49476,6 +49498,10 @@ class ThreeJsScene {
      * @param obj
      */
     add(obj) {
+        if (obj instanceof ThreeJSObject) {
+            this.scene.add(obj.object3d);
+            return;
+        }
         this.scene.add(obj);
     }
     /**
@@ -49487,6 +49513,7 @@ class ThreeJsScene {
         if (this.controls) {
             this.controls.update();
         }
+        this.observers.forEach((observer) => observer.update(elapsedTime));
         // Render
         this.renderer.render(this.scene, this.camera);
         // Call loop again on the next frame
@@ -49523,6 +49550,12 @@ class ThreeJsScene {
                 this.renderer.setSize(this.rendererSizes.width, this.rendererSizes.height);
             this.renderer.setPixelRatio(getDevicePixelRatio());
         });
+    }
+    subscribe(obj) {
+        this.observers.push(obj);
+    }
+    unsubscribe(obj) {
+        this.observers = this.observers.filter((subscriber) => subscriber !== obj);
     }
 }
 
@@ -55332,4 +55365,4 @@ var OrbitControls$1 = /*#__PURE__*/Object.freeze({
 	MapControls: MapControls
 });
 
-export { ThreeJsGLTFLoader, ThreeJsScene, ThreeJsTextureLoader };
+export { ThreeJsGLTFLoader, ThreeJSObject as ThreeJsObject, ThreeJsScene, ThreeJsTextureLoader };
