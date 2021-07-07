@@ -17,7 +17,13 @@ export default class ThreeJsScene {
   public clock: THREE.Clock;
   public controls: any;
   public useOrbitControls: boolean;
-  private observers: ThreeJsObject[];
+  public raycaster: THREE.Raycaster;
+  public mouse: THREE.Vector2;
+  private mouseStopTime: number;
+  private mouseMoving: boolean;
+  private mouseMoveTimeout: number;
+  private animatedObjects: ThreeJsObject[];
+  private selectableObjects: ThreeJsObject[];
 
   constructor(
     canvas: HTMLCanvasElement,
@@ -34,12 +40,18 @@ export default class ThreeJsScene {
     this.isFullScreen = isFullScreen;
     this.cameraProps = cameraProps;
     this.useOrbitControls = useOrbitControls;
-    this.observers = [];
+    this.animatedObjects = [];
+    this.selectableObjects = [];
 
     this.scene = new THREE.Scene();
     this.canvas = canvas;
 
     this.clock = new THREE.Clock();
+    this.raycaster = new THREE.Raycaster();
+    this.mouse = new THREE.Vector2();
+    this.mouseStopTime = 300;
+    this.mouseMoveTimeout = 0;
+    this.mouseMoving = false;
 
     this.rendererSizes = this.buildSizes();
 
@@ -137,7 +149,25 @@ export default class ThreeJsScene {
       this.controls.update();
     }
 
-    this.observers.forEach((observer) => observer.update(elapsedTime));
+    if (this.selectableObjects.length) {
+      this.raycaster.setFromCamera(this.mouse, this.camera);
+      this.selectableObjects.forEach((observer) => {
+        if (this.mouseMoving) {
+          const intersects = this.raycaster.intersectObject(observer.object3d);
+          console.log(intersects);
+
+          if (intersects.length) {
+            observer.onIntersect();
+          } else {
+            observer.offIntersect();
+          }
+        }
+      });
+    }
+
+    this.animatedObjects.forEach((observer) => {
+      observer.update(elapsedTime);
+    });
 
     // Render
     this.renderer.render(this.scene, this.camera);
@@ -188,13 +218,43 @@ export default class ThreeJsScene {
         );
       this.renderer.setPixelRatio(getDevicePixelRatio());
     });
+
+    this.canvas.addEventListener(events.MOUSEMOVE, (event) => {
+      const mouseEvent = event as MouseEvent;
+      this.mouse.x = (mouseEvent.clientX / this.rendererSizes.width) * 2 - 1;
+      this.mouse.y = -(mouseEvent.clientY / this.rendererSizes.height) * 2 + 1;
+
+      this.mouseMoving = true;
+
+      if (this.mouseMoveTimeout) {
+        clearTimeout(this.mouseMoveTimeout);
+      }
+
+      this.mouseMoveTimeout = window.setTimeout(() => {
+        this.mouseMoving = false;
+        clearTimeout(this.mouseMoveTimeout);
+        console.log('stop');
+      }, this.mouseMoveTimeout);
+    });
   }
 
-  subscribe(obj: ThreeJsObject) {
-    this.observers.push(obj);
+  animate(obj: ThreeJsObject) {
+    this.animatedObjects.push(obj);
   }
 
-  unsubscribe(obj: ThreeJsObject) {
-    this.observers = this.observers.filter((subscriber) => subscriber !== obj);
+  stopAnimate(obj: ThreeJsObject) {
+    this.animatedObjects = this.animatedObjects.filter(
+      (subscriber) => subscriber !== obj
+    );
+  }
+
+  selectable(obj: ThreeJsObject) {
+    this.selectableObjects.push(obj);
+  }
+
+  stopSelectable(obj: ThreeJsObject) {
+    this.selectableObjects = this.selectableObjects.filter(
+      (subscriber) => subscriber !== obj
+    );
   }
 }

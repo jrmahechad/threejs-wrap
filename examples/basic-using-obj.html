@@ -36,21 +36,25 @@
 
       const cube1 = new Cube();
       scene.add(cube1);
-      scene.subscribe(cube1);
+      scene.animate(cube1);
+      scene.selectable(cube1);
 
       const cube2 = new Cube({
         size: 0.5,
-        x: 2
+        x: 2,
+        color: 0x00ff00
       });
       scene.add(cube2);
-      scene.subscribe(cube2);
+      scene.animate(cube2);
+      scene.selectable(cube2);
 
       const cube3 = new Cube({
         size: 1.5,
-        x: -2
+        x: -2,
+        color: 0x0000ff
       });
       scene.add(cube3);
-      // scene.subscribe(cube3);
+      scene.selectable(cube3);
 
       scene.camera.position.z = 5;
       scene.start();

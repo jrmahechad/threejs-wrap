@@ -8,6 +8,7 @@ export default class Cube extends ThreeJsObject {
 
   create() {
     const { size = 1, x = 0, y = 0, z = 0, color = 0xff0000 } = this.params;
+    this.color = color;
 
     this.material = new this.THREE.MeshBasicMaterial({ color });
     this.geometry = new this.THREE.BoxGeometry(size, size, size);
@@ -22,5 +23,13 @@ export default class Cube extends ThreeJsObject {
 
   update(elapsedTime) {
     this.mesh.rotation.y = (elapsedTime / 5) * Math.PI * 2;
+  }
+
+  onIntersect() {
+    this.material.color.set(new this.THREE.Color());
+  }
+
+  offIntersect() {
+    this.material.color.set(this.color);
   }
 }

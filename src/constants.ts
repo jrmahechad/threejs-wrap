@@ -5,7 +5,9 @@ const sceneDefaults = {
 };
 
 const events = {
-  RESIZE: 'resize'
+  RESIZE: 'resize',
+  CLICK: 'click',
+  MOUSEMOVE: 'mousemove'
 };
 
 export { sceneDefaults, events };

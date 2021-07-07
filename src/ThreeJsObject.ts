@@ -31,4 +31,14 @@ export default class ThreeJSObject implements BaseObject {
    * Override to define animations
    */
   update(elapsedTime: number): void {}
+
+  /**
+   * Override to define onIntersect
+   */
+  onIntersect(): void {}
+
+  /**
+   * Override to define offIntersect
+   */
+  offIntersect(): void {}
 }
