@@ -31,7 +31,10 @@
       import { default as Cube } from './objects/cube.js';
 
       const canvas = document.querySelector('canvas.webgl');
-      const scene = new ThreeJsScene(canvas, { isFullScreen: true });
+      const scene = new ThreeJsScene(canvas, {
+        isFullScreen: true,
+        trackMouse: true
+      });
       console.log('scene', scene);
 
       const cube1 = new Cube();

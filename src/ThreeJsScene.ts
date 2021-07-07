@@ -2,6 +2,7 @@ import * as THREE from 'three';
 import { getDevicePixelRatio } from './utils';
 import { sceneDefaults, events } from './constants';
 import { default as ThreeJsObject } from './ThreeJsObject';
+import { default as MouseManager } from './MouseManager';
 
 /**
  * Wrapper for the ThreeJs Scene.
@@ -17,11 +18,9 @@ export default class ThreeJsScene {
   public clock: THREE.Clock;
   public controls: any;
   public useOrbitControls: boolean;
-  public raycaster: THREE.Raycaster;
-  public mouse: THREE.Vector2;
-  private mouseStopTime: number;
-  private mouseMoving: boolean;
-  private mouseMoveTimeout: number;
+  public raycaster: THREE.Raycaster | undefined;
+  public mouseManager: MouseManager | undefined;
+
   private animatedObjects: ThreeJsObject[];
   private selectableObjects: ThreeJsObject[];
 
@@ -30,9 +29,10 @@ export default class ThreeJsScene {
     opts: {
       isFullScreen: boolean;
       cameraProps: { fov: number; near: number; far: number };
+      trackMouse: boolean;
     }
   ) {
-    const { isFullScreen, cameraProps, useOrbitControls } = {
+    const { isFullScreen, cameraProps, useOrbitControls, trackMouse } = {
       ...sceneDefaults,
       ...opts
     };
@@ -47,11 +47,11 @@ export default class ThreeJsScene {
     this.canvas = canvas;
 
     this.clock = new THREE.Clock();
-    this.raycaster = new THREE.Raycaster();
-    this.mouse = new THREE.Vector2();
-    this.mouseStopTime = 300;
-    this.mouseMoveTimeout = 0;
-    this.mouseMoving = false;
+
+    if (trackMouse) {
+      this.raycaster = new THREE.Raycaster();
+      this.mouseManager = new MouseManager();
+    }
 
     this.rendererSizes = this.buildSizes();
 
@@ -149,25 +149,9 @@ export default class ThreeJsScene {
       this.controls.update();
     }
 
-    if (this.selectableObjects.length) {
-      this.raycaster.setFromCamera(this.mouse, this.camera);
-      this.selectableObjects.forEach((observer) => {
-        if (this.mouseMoving) {
-          const intersects = this.raycaster.intersectObject(observer.object3d);
-          console.log(intersects);
+    this.checkSelectableObjects();
 
-          if (intersects.length) {
-            observer.onIntersect();
-          } else {
-            observer.offIntersect();
-          }
-        }
-      });
-    }
-
-    this.animatedObjects.forEach((observer) => {
-      observer.update(elapsedTime);
-    });
+    this.checkAnimatedObjects(elapsedTime);
 
     // Render
     this.renderer.render(this.scene, this.camera);
@@ -177,9 +161,48 @@ export default class ThreeJsScene {
   }
 
   /**
+   * Check animated objects
+   * @param elapsedTime
+   */
+  private checkAnimatedObjects(elapsedTime: number) {
+    this.animatedObjects.forEach((observer) => {
+      observer.update(elapsedTime);
+    });
+  }
+
+  /**
+   * Check selectable objects (Only one can be selected)
+   */
+  private checkSelectableObjects() {
+    if (
+      this.selectableObjects.length &&
+      this.mouseManager &&
+      this.raycaster &&
+      this.mouseManager?.mouseMoving
+    ) {
+      this.raycaster.setFromCamera(this.mouseManager.mouse, this.camera);
+      let minDistance = Number.MAX_SAFE_INTEGER;
+      let selectedObject: ThreeJsObject | undefined;
+
+      this.selectableObjects.forEach((observer) => {
+        const intersects = this.raycaster?.intersectObject(observer.object3d);
+        observer.offIntersect();
+        if (intersects?.length && intersects[0].distance < minDistance) {
+          minDistance = intersects[0].distance;
+          selectedObject = observer;
+        }
+      });
+
+      if (selectedObject) {
+        selectedObject.onIntersect();
+      }
+    }
+  }
+
+  /**
    * Load controls.
    */
-  loadControls() {
+  private loadControls() {
     if (this.useOrbitControls) {
       import('three/examples/jsm/controls/OrbitControls.js').then(
         ({ OrbitControls }) => {
@@ -194,7 +217,7 @@ export default class ThreeJsScene {
   /**
    * Adds event listeners.
    */
-  addEventListeners() {
+  private addEventListeners() {
     window.addEventListener(events.RESIZE, () => {
       const newSizes = this.buildSizes();
 
@@ -219,23 +242,11 @@ export default class ThreeJsScene {
       this.renderer.setPixelRatio(getDevicePixelRatio());
     });
 
-    this.canvas.addEventListener(events.MOUSEMOVE, (event) => {
-      const mouseEvent = event as MouseEvent;
-      this.mouse.x = (mouseEvent.clientX / this.rendererSizes.width) * 2 - 1;
-      this.mouse.y = -(mouseEvent.clientY / this.rendererSizes.height) * 2 + 1;
-
-      this.mouseMoving = true;
-
-      if (this.mouseMoveTimeout) {
-        clearTimeout(this.mouseMoveTimeout);
-      }
-
-      this.mouseMoveTimeout = window.setTimeout(() => {
-        this.mouseMoving = false;
-        clearTimeout(this.mouseMoveTimeout);
-        console.log('stop');
-      }, this.mouseMoveTimeout);
-    });
+    if (this.mouseManager) {
+      this.canvas.addEventListener(events.MOUSEMOVE, (event) => {
+        this.mouseManager?.handleMouseMove(this.rendererSizes);
+      });
+    }
   }
 
   animate(obj: ThreeJsObject) {

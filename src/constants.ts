@@ -1,7 +1,8 @@
 const sceneDefaults = {
   isFullScreen: false,
   cameraProps: { fov: 75, near: 0.1, far: 1000 },
-  useOrbitControls: true
+  useOrbitControls: true,
+  trackMouse: false
 };
 
 const events = {
