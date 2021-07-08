@@ -6,6 +6,18 @@ interface BaseObject {
   update(elapsedTime: number): void;
 }
 
+export interface DebugObject {
+  baseObj: Object;
+  property: string;
+  min?: number;
+  max?: number;
+  step?: number;
+  name?: string;
+  onChange?: number;
+  isColor: boolean;
+  callback: (value?: any) => void;
+}
+
 /**
  *
  */
@@ -41,4 +53,12 @@ export default class ThreeJSObject implements BaseObject {
    * Override to define offIntersect
    */
   offIntersect(): void {}
+
+  /**
+   * Override to return debug
+   * @returns
+   */
+  getDebugProperties(): DebugObject[] {
+    return [];
+  }
 }

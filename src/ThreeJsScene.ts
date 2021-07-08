@@ -2,7 +2,9 @@ import * as THREE from 'three';
 import { getDevicePixelRatio } from './utils';
 import { sceneDefaults, events } from './constants';
 import { default as ThreeJsObject } from './ThreeJsObject';
+import { DebugObject } from './ThreeJsObject';
 import { default as MouseManager } from './MouseManager';
+import { GUI } from 'dat.gui';
 
 /**
  * Wrapper for the ThreeJs Scene.
@@ -18,8 +20,11 @@ export default class ThreeJsScene {
   public clock: THREE.Clock;
   public controls: any;
   public useOrbitControls: boolean;
-  public raycaster: THREE.Raycaster | undefined;
-  public mouseManager: MouseManager | undefined;
+  public raycaster?: THREE.Raycaster;
+  public mouseManager?: MouseManager;
+  public debug: boolean;
+  public gui?: GUI;
+  public debugElements: Array<DebugObject[]>;
 
   private animatedObjects: ThreeJsObject[];
   private selectableObjects: ThreeJsObject[];
@@ -30,9 +35,10 @@ export default class ThreeJsScene {
       isFullScreen: boolean;
       cameraProps: { fov: number; near: number; far: number };
       trackMouse: boolean;
+      debug: boolean;
     }
   ) {
-    const { isFullScreen, cameraProps, useOrbitControls, trackMouse } = {
+    const { isFullScreen, cameraProps, useOrbitControls, trackMouse, debug } = {
       ...sceneDefaults,
       ...opts
     };
@@ -40,8 +46,10 @@ export default class ThreeJsScene {
     this.isFullScreen = isFullScreen;
     this.cameraProps = cameraProps;
     this.useOrbitControls = useOrbitControls;
+    this.debug = debug;
     this.animatedObjects = [];
     this.selectableObjects = [];
+    this.debugElements = [];
 
     this.scene = new THREE.Scene();
     this.canvas = canvas;
@@ -51,6 +59,10 @@ export default class ThreeJsScene {
     if (trackMouse) {
       this.raycaster = new THREE.Raycaster();
       this.mouseManager = new MouseManager();
+    }
+
+    if (this.debug) {
+      this.importDatGUI();
     }
 
     this.rendererSizes = this.buildSizes();
@@ -215,6 +227,34 @@ export default class ThreeJsScene {
   }
 
   /**
+   * Imports dat.gui and load all elements.
+   */
+  private importDatGUI() {
+    import('dat.gui').then((dat) => {
+      this.gui = new dat.GUI();
+
+      this.debugElements.forEach((element) => {
+        element.forEach((obj) => {
+          this.addElementToDatGUI(obj);
+        });
+      });
+    });
+  }
+
+  private addElementToDatGUI(obj: DebugObject) {
+    const controller = obj.isColor
+      ? this.gui
+          ?.addColor(obj.baseObj, obj.property)
+          .name(obj.name || obj.property)
+      : this.gui
+          ?.add(obj.baseObj, obj.property, obj.min, obj.max, obj.step)
+          .name(obj.name || obj.property);
+    if (obj.callback) {
+      controller?.onChange(obj.callback);
+    }
+  }
+
+  /**
    * Adds event listeners.
    */
   private addEventListeners() {
@@ -249,23 +289,51 @@ export default class ThreeJsScene {
     }
   }
 
+  /**
+   * Adds a element to the animation observer
+   * @param obj
+   */
   animate(obj: ThreeJsObject) {
     this.animatedObjects.push(obj);
   }
 
+  /**
+   * Removes a element from the animation observer
+   * @param obj
+   */
   stopAnimate(obj: ThreeJsObject) {
     this.animatedObjects = this.animatedObjects.filter(
       (subscriber) => subscriber !== obj
     );
   }
 
+  /**
+   * Adds a element to the selectable observer
+   * @param obj
+   */
   selectable(obj: ThreeJsObject) {
     this.selectableObjects.push(obj);
   }
 
+  /**
+   * Removes a element from the selectable observer
+   * @param obj
+   */
   stopSelectable(obj: ThreeJsObject) {
     this.selectableObjects = this.selectableObjects.filter(
       (subscriber) => subscriber !== obj
     );
+  }
+
+  /**
+   * Add properties to the debugElements array
+   * @param properties
+   */
+  addToDebug(properties: DebugObject[]) {
+    if (!this.debug) {
+      throw new Error('Please enable debug for the scene');
+    }
+
+    this.debugElements.push(properties);
   }
 }

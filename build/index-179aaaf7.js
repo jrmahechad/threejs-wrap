@@ -49398,7 +49398,8 @@ const sceneDefaults = {
     isFullScreen: false,
     cameraProps: { fov: 75, near: 0.1, far: 1000 },
     useOrbitControls: true,
-    trackMouse: false
+    trackMouse: false,
+    debug: false
 };
 const events = {
     RESIZE: 'resize',
@@ -49433,6 +49434,13 @@ class ThreeJSObject {
      * Override to define offIntersect
      */
     offIntersect() { }
+    /**
+     * Override to return debug
+     * @returns
+     */
+    getDebugProperties() {
+        return [];
+    }
 }
 
 class MouseManager {
@@ -49462,18 +49470,23 @@ class MouseManager {
  */
 class ThreeJsScene {
     constructor(canvas, opts) {
-        const { isFullScreen, cameraProps, useOrbitControls, trackMouse } = Object.assign(Object.assign({}, sceneDefaults), opts);
+        const { isFullScreen, cameraProps, useOrbitControls, trackMouse, debug } = Object.assign(Object.assign({}, sceneDefaults), opts);
         this.isFullScreen = isFullScreen;
         this.cameraProps = cameraProps;
         this.useOrbitControls = useOrbitControls;
+        this.debug = debug;
         this.animatedObjects = [];
         this.selectableObjects = [];
+        this.debugElements = [];
         this.scene = new Scene();
         this.canvas = canvas;
         this.clock = new Clock();
         if (trackMouse) {
             this.raycaster = new Raycaster();
             this.mouseManager = new MouseManager();
+        }
+        if (this.debug) {
+            this.importDatGUI();
         }
         this.rendererSizes = this.buildSizes();
         this.renderer = this.buildRenderer();
@@ -49598,11 +49611,33 @@ class ThreeJsScene {
      */
     loadControls() {
         if (this.useOrbitControls) {
-            import('./OrbitControls-7703e178.js').then(({ OrbitControls }) => {
+            import('./OrbitControls-8664f8ba.js').then(({ OrbitControls }) => {
                 // Controls
                 this.controls = new OrbitControls(this.camera, this.canvas);
                 this.controls.enableDamping = true;
             });
+        }
+    }
+    /**
+     * Imports dat.gui and load all elements.
+     */
+    importDatGUI() {
+        import('./dat.gui.module-1f1b2ec5.js').then((dat) => {
+            this.gui = new dat.GUI();
+            this.debugElements.forEach((element) => {
+                element.forEach((obj) => {
+                    this.addElementToDatGUI(obj);
+                });
+            });
+        });
+    }
+    addElementToDatGUI(obj) {
+        var _a, _b;
+        const controller = obj.isColor
+            ? (_a = this.gui) === null || _a === void 0 ? void 0 : _a.addColor(obj.baseObj, obj.property).name(obj.name || obj.property)
+            : (_b = this.gui) === null || _b === void 0 ? void 0 : _b.add(obj.baseObj, obj.property, obj.min, obj.max, obj.step).name(obj.name || obj.property);
+        if (obj.callback) {
+            controller === null || controller === void 0 ? void 0 : controller.onChange(obj.callback);
         }
     }
     /**
@@ -49631,17 +49666,43 @@ class ThreeJsScene {
             });
         }
     }
+    /**
+     * Adds a element to the animation observer
+     * @param obj
+     */
     animate(obj) {
         this.animatedObjects.push(obj);
     }
+    /**
+     * Removes a element from the animation observer
+     * @param obj
+     */
     stopAnimate(obj) {
         this.animatedObjects = this.animatedObjects.filter((subscriber) => subscriber !== obj);
     }
+    /**
+     * Adds a element to the selectable observer
+     * @param obj
+     */
     selectable(obj) {
         this.selectableObjects.push(obj);
     }
+    /**
+     * Removes a element from the selectable observer
+     * @param obj
+     */
     stopSelectable(obj) {
         this.selectableObjects = this.selectableObjects.filter((subscriber) => subscriber !== obj);
+    }
+    /**
+     * Add properties to the debugElements array
+     * @param properties
+     */
+    addToDebug(properties) {
+        if (!this.debug) {
+            throw new Error('Please enable debug for the scene');
+        }
+        this.debugElements.push(properties);
     }
 }
 
@@ -53589,7 +53650,7 @@ class ThreeJsGLTFLoader {
         this.gltfLoader.load(modelPath, onLoad, onProgress, onError);
     }
     setDracoLoader(decoderPath) {
-        import('./DRACOLoader-ac7bd037.js').then(({ DRACOLoader }) => {
+        import('./DRACOLoader-61982141.js').then(({ DRACOLoader }) => {
             const dracoLoader = new DRACOLoader();
             dracoLoader.setDecoderPath(decoderPath);
             this.gltfLoader.setDRACOLoader(dracoLoader);
