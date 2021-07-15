@@ -40,6 +40,19 @@ export default class ThreeJsGLTFLoader {
     this.gltfLoader.load(modelPath, onLoad, onProgress, onError);
   }
 
+  /**
+   *
+   * @param url
+   * @param onProgress
+   * @returns
+   */
+  getModelAsync(
+    url: string,
+    onProgress?: (event: ProgressEvent) => void
+  ): Promise<GLTF> {
+    return this.gltfLoader.loadAsync(url, onProgress);
+  }
+
   setDracoLoader(decoderPath: string) {
     import('three/examples/jsm/loaders/DRACOLoader').then(({ DRACOLoader }) => {
       const dracoLoader = new DRACOLoader();
