@@ -2,6 +2,7 @@ import * as THREE from 'three';
 import { getDevicePixelRatio } from './utils';
 import { sceneDefaults, events } from './constants';
 import { default as ThreeJsObject } from './ThreeJsObject';
+import { default as SelectionManager } from './SelectionManager';
 import { DebugObject } from './ThreeJsObject';
 import { default as MouseManager } from './MouseManager';
 import { GUI } from 'dat.gui';
@@ -20,14 +21,13 @@ export default class ThreeJsScene {
   public clock: THREE.Clock;
   public controls: any;
   public useOrbitControls: boolean;
-  public raycaster?: THREE.Raycaster;
   public mouseManager?: MouseManager;
   public debug: boolean;
   public gui?: GUI;
   public debugElements: Array<DebugObject[]>;
+  public selectionMananer?: SelectionManager;
 
   private animatedObjects: ThreeJsObject[];
-  private selectableObjects: ThreeJsObject[];
 
   constructor(
     canvas: HTMLCanvasElement,
@@ -48,18 +48,12 @@ export default class ThreeJsScene {
     this.useOrbitControls = useOrbitControls;
     this.debug = debug;
     this.animatedObjects = [];
-    this.selectableObjects = [];
     this.debugElements = [];
 
     this.scene = new THREE.Scene();
     this.canvas = canvas;
 
     this.clock = new THREE.Clock();
-
-    if (trackMouse) {
-      this.raycaster = new THREE.Raycaster();
-      this.mouseManager = new MouseManager();
-    }
 
     if (this.debug) {
       this.importDatGUI();
@@ -71,9 +65,14 @@ export default class ThreeJsScene {
 
     this.camera = this.buildCamera();
 
-    this.addEventListeners();
-
     this.loop = this.loop.bind(this);
+
+    if (trackMouse) {
+      this.selectionMananer = new SelectionManager(this.camera);
+      this.mouseManager = new MouseManager();
+    }
+
+    this.addEventListeners();
   }
 
   /**
@@ -161,7 +160,13 @@ export default class ThreeJsScene {
       this.controls.update();
     }
 
-    this.checkSelectableObjects();
+    if (
+      this.selectionMananer &&
+      this.mouseManager &&
+      this.mouseManager.mouseMoving
+    ) {
+      this.selectionMananer.checkSelectableObjects(this.mouseManager.mouse);
+    }
 
     this.checkAnimatedObjects(elapsedTime);
 
@@ -180,35 +185,6 @@ export default class ThreeJsScene {
     this.animatedObjects.forEach((observer) => {
       observer.update(elapsedTime);
     });
-  }
-
-  /**
-   * Check selectable objects (Only one can be selected)
-   */
-  private checkSelectableObjects() {
-    if (
-      this.selectableObjects.length &&
-      this.mouseManager &&
-      this.raycaster &&
-      this.mouseManager?.mouseMoving
-    ) {
-      this.raycaster.setFromCamera(this.mouseManager.mouse, this.camera);
-      let minDistance = Number.MAX_SAFE_INTEGER;
-      let selectedObject: ThreeJsObject | undefined;
-
-      this.selectableObjects.forEach((observer) => {
-        const intersects = this.raycaster?.intersectObject(observer.object3d);
-        observer.offIntersect();
-        if (intersects?.length && intersects[0].distance < minDistance) {
-          minDistance = intersects[0].distance;
-          selectedObject = observer;
-        }
-      });
-
-      if (selectedObject) {
-        selectedObject.onIntersect();
-      }
-    }
   }
 
   /**
@@ -238,6 +214,8 @@ export default class ThreeJsScene {
           this.addElementToDatGUI(obj);
         });
       });
+
+      this.debugElements = [];
     });
   }
 
@@ -312,7 +290,10 @@ export default class ThreeJsScene {
    * @param obj
    */
   selectable(obj: ThreeJsObject) {
-    this.selectableObjects.push(obj);
+    if (!this.selectionMananer) {
+      throw Error('Please enable trackMouse flag on the scene');
+    }
+    this.selectionMananer.selectable(obj);
   }
 
   /**
@@ -320,9 +301,10 @@ export default class ThreeJsScene {
    * @param obj
    */
   stopSelectable(obj: ThreeJsObject) {
-    this.selectableObjects = this.selectableObjects.filter(
-      (subscriber) => subscriber !== obj
-    );
+    if (!this.selectionMananer) {
+      throw Error('Please enable trackMouse flag on the scene');
+    }
+    this.selectionMananer.stopSelectable(obj);
   }
 
   /**

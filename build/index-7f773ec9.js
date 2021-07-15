@@ -49443,6 +49443,49 @@ class ThreeJSObject {
     }
 }
 
+class SelectionManager {
+    constructor(camera) {
+        this.raycaster = new Raycaster();
+        this.selectableObjects = [];
+        this.camera = camera;
+    }
+    /**
+     * Adds a element to the selectable observer
+     * @param obj
+     */
+    selectable(obj) {
+        this.selectableObjects.push(obj);
+    }
+    /**
+     * Removes a element from the selectable observer
+     * @param obj
+     */
+    stopSelectable(obj) {
+        this.selectableObjects = this.selectableObjects.filter((subscriber) => subscriber !== obj);
+    }
+    /**
+     * Check selectable objects (Only one can be selected)
+     */
+    checkSelectableObjects(mouse) {
+        if (this.selectableObjects.length && this.raycaster) {
+            this.raycaster.setFromCamera(mouse, this.camera);
+            let minDistance = Number.MAX_SAFE_INTEGER;
+            let selectedObject;
+            this.selectableObjects.forEach((observer) => {
+                const intersects = this.raycaster.intersectObject(observer.object3d);
+                observer.offIntersect();
+                if ((intersects === null || intersects === void 0 ? void 0 : intersects.length) && intersects[0].distance < minDistance) {
+                    minDistance = intersects[0].distance;
+                    selectedObject = observer;
+                }
+            });
+            if (selectedObject) {
+                selectedObject.onIntersect();
+            }
+        }
+    }
+}
+
 class MouseManager {
     constructor() {
         this.mouse = new Vector2();
@@ -49476,23 +49519,22 @@ class ThreeJsScene {
         this.useOrbitControls = useOrbitControls;
         this.debug = debug;
         this.animatedObjects = [];
-        this.selectableObjects = [];
         this.debugElements = [];
         this.scene = new Scene();
         this.canvas = canvas;
         this.clock = new Clock();
-        if (trackMouse) {
-            this.raycaster = new Raycaster();
-            this.mouseManager = new MouseManager();
-        }
         if (this.debug) {
             this.importDatGUI();
         }
         this.rendererSizes = this.buildSizes();
         this.renderer = this.buildRenderer();
         this.camera = this.buildCamera();
-        this.addEventListeners();
         this.loop = this.loop.bind(this);
+        if (trackMouse) {
+            this.selectionMananer = new SelectionManager(this.camera);
+            this.mouseManager = new MouseManager();
+        }
+        this.addEventListeners();
     }
     /**
      * Returns THREE library
@@ -49564,7 +49606,11 @@ class ThreeJsScene {
         if (this.controls) {
             this.controls.update();
         }
-        this.checkSelectableObjects();
+        if (this.selectionMananer &&
+            this.mouseManager &&
+            this.mouseManager.mouseMoving) {
+            this.selectionMananer.checkSelectableObjects(this.mouseManager.mouse);
+        }
         this.checkAnimatedObjects(elapsedTime);
         // Render
         this.renderer.render(this.scene, this.camera);
@@ -49581,37 +49627,11 @@ class ThreeJsScene {
         });
     }
     /**
-     * Check selectable objects (Only one can be selected)
-     */
-    checkSelectableObjects() {
-        var _a;
-        if (this.selectableObjects.length &&
-            this.mouseManager &&
-            this.raycaster &&
-            ((_a = this.mouseManager) === null || _a === void 0 ? void 0 : _a.mouseMoving)) {
-            this.raycaster.setFromCamera(this.mouseManager.mouse, this.camera);
-            let minDistance = Number.MAX_SAFE_INTEGER;
-            let selectedObject;
-            this.selectableObjects.forEach((observer) => {
-                var _a;
-                const intersects = (_a = this.raycaster) === null || _a === void 0 ? void 0 : _a.intersectObject(observer.object3d);
-                observer.offIntersect();
-                if ((intersects === null || intersects === void 0 ? void 0 : intersects.length) && intersects[0].distance < minDistance) {
-                    minDistance = intersects[0].distance;
-                    selectedObject = observer;
-                }
-            });
-            if (selectedObject) {
-                selectedObject.onIntersect();
-            }
-        }
-    }
-    /**
      * Load controls.
      */
     loadControls() {
         if (this.useOrbitControls) {
-            import('./OrbitControls-8664f8ba.js').then(({ OrbitControls }) => {
+            import('./OrbitControls-61bd2622.js').then(({ OrbitControls }) => {
                 // Controls
                 this.controls = new OrbitControls(this.camera, this.canvas);
                 this.controls.enableDamping = true;
@@ -49629,6 +49649,7 @@ class ThreeJsScene {
                     this.addElementToDatGUI(obj);
                 });
             });
+            this.debugElements = [];
         });
     }
     addElementToDatGUI(obj) {
@@ -49685,14 +49706,20 @@ class ThreeJsScene {
      * @param obj
      */
     selectable(obj) {
-        this.selectableObjects.push(obj);
+        if (!this.selectionMananer) {
+            throw Error('Please enable trackMouse flag on the scene');
+        }
+        this.selectionMananer.selectable(obj);
     }
     /**
      * Removes a element from the selectable observer
      * @param obj
      */
     stopSelectable(obj) {
-        this.selectableObjects = this.selectableObjects.filter((subscriber) => subscriber !== obj);
+        if (!this.selectionMananer) {
+            throw Error('Please enable trackMouse flag on the scene');
+        }
+        this.selectionMananer.stopSelectable(obj);
     }
     /**
      * Add properties to the debugElements array
@@ -53650,7 +53677,7 @@ class ThreeJsGLTFLoader {
         this.gltfLoader.load(modelPath, onLoad, onProgress, onError);
     }
     setDracoLoader(decoderPath) {
-        import('./DRACOLoader-61982141.js').then(({ DRACOLoader }) => {
+        import('./DRACOLoader-e836fdd7.js').then(({ DRACOLoader }) => {
             const dracoLoader = new DRACOLoader();
             dracoLoader.setDecoderPath(decoderPath);
             this.gltfLoader.setDRACOLoader(dracoLoader);
