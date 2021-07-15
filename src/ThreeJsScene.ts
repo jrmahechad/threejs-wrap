@@ -3,9 +3,9 @@ import { getDevicePixelRatio } from './utils';
 import { sceneDefaults, events } from './constants';
 import { default as ThreeJsObject } from './ThreeJsObject';
 import { default as SelectionManager } from './SelectionManager';
+import { default as DebugManager } from './DebugManager';
 import { DebugObject } from './ThreeJsObject';
 import { default as MouseManager } from './MouseManager';
-import { GUI } from 'dat.gui';
 
 /**
  * Wrapper for the ThreeJs Scene.
@@ -23,8 +23,8 @@ export default class ThreeJsScene {
   public useOrbitControls: boolean;
   public mouseManager?: MouseManager;
   public debug: boolean;
-  public gui?: GUI;
-  public debugElements: Array<DebugObject[]>;
+  public debugManager?: DebugManager;
+
   public selectionMananer?: SelectionManager;
 
   private animatedObjects: ThreeJsObject[];
@@ -48,7 +48,6 @@ export default class ThreeJsScene {
     this.useOrbitControls = useOrbitControls;
     this.debug = debug;
     this.animatedObjects = [];
-    this.debugElements = [];
 
     this.scene = new THREE.Scene();
     this.canvas = canvas;
@@ -56,7 +55,7 @@ export default class ThreeJsScene {
     this.clock = new THREE.Clock();
 
     if (this.debug) {
-      this.importDatGUI();
+      this.debugManager = new DebugManager();
     }
 
     this.rendererSizes = this.buildSizes();
@@ -203,36 +202,6 @@ export default class ThreeJsScene {
   }
 
   /**
-   * Imports dat.gui and load all elements.
-   */
-  private importDatGUI() {
-    import('dat.gui').then((dat) => {
-      this.gui = new dat.GUI();
-
-      this.debugElements.forEach((element) => {
-        element.forEach((obj) => {
-          this.addElementToDatGUI(obj);
-        });
-      });
-
-      this.debugElements = [];
-    });
-  }
-
-  private addElementToDatGUI(obj: DebugObject) {
-    const controller = obj.isColor
-      ? this.gui
-          ?.addColor(obj.baseObj, obj.property)
-          .name(obj.name || obj.property)
-      : this.gui
-          ?.add(obj.baseObj, obj.property, obj.min, obj.max, obj.step)
-          .name(obj.name || obj.property);
-    if (obj.callback) {
-      controller?.onChange(obj.callback);
-    }
-  }
-
-  /**
    * Adds event listeners.
    */
   private addEventListeners() {
@@ -316,6 +285,6 @@ export default class ThreeJsScene {
       throw new Error('Please enable debug for the scene');
     }
 
-    this.debugElements.push(properties);
+    this.debugManager?.addToDebug(properties);
   }
 }

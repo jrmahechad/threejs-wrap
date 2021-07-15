@@ -49486,6 +49486,43 @@ class SelectionManager {
     }
 }
 
+class DebugManager {
+    constructor() {
+        this.debugElements = [];
+        this.importDatGUI();
+    }
+    /**
+     * Imports dat.gui and load all elements.
+     */
+    importDatGUI() {
+        import('./dat.gui.module-1f1b2ec5.js').then((dat) => {
+            this.gui = new dat.GUI();
+            this.debugElements.forEach((element) => {
+                element.forEach((obj) => {
+                    this.addElementToDatGUI(obj);
+                });
+            });
+            this.debugElements = [];
+        });
+    }
+    addElementToDatGUI(obj) {
+        var _a, _b;
+        const controller = obj.isColor
+            ? (_a = this.gui) === null || _a === void 0 ? void 0 : _a.addColor(obj.baseObj, obj.property).name(obj.name || obj.property)
+            : (_b = this.gui) === null || _b === void 0 ? void 0 : _b.add(obj.baseObj, obj.property, obj.min, obj.max, obj.step).name(obj.name || obj.property);
+        if (obj.callback) {
+            controller === null || controller === void 0 ? void 0 : controller.onChange(obj.callback);
+        }
+    }
+    /**
+     * Add properties to the debugElements array
+     * @param properties
+     */
+    addToDebug(properties) {
+        this.debugElements.push(properties);
+    }
+}
+
 class MouseManager {
     constructor() {
         this.mouse = new Vector2();
@@ -49519,12 +49556,11 @@ class ThreeJsScene {
         this.useOrbitControls = useOrbitControls;
         this.debug = debug;
         this.animatedObjects = [];
-        this.debugElements = [];
         this.scene = new Scene();
         this.canvas = canvas;
         this.clock = new Clock();
         if (this.debug) {
-            this.importDatGUI();
+            this.debugManager = new DebugManager();
         }
         this.rendererSizes = this.buildSizes();
         this.renderer = this.buildRenderer();
@@ -49631,34 +49667,11 @@ class ThreeJsScene {
      */
     loadControls() {
         if (this.useOrbitControls) {
-            import('./OrbitControls-61bd2622.js').then(({ OrbitControls }) => {
+            import('./OrbitControls-4cce1c5a.js').then(({ OrbitControls }) => {
                 // Controls
                 this.controls = new OrbitControls(this.camera, this.canvas);
                 this.controls.enableDamping = true;
             });
-        }
-    }
-    /**
-     * Imports dat.gui and load all elements.
-     */
-    importDatGUI() {
-        import('./dat.gui.module-1f1b2ec5.js').then((dat) => {
-            this.gui = new dat.GUI();
-            this.debugElements.forEach((element) => {
-                element.forEach((obj) => {
-                    this.addElementToDatGUI(obj);
-                });
-            });
-            this.debugElements = [];
-        });
-    }
-    addElementToDatGUI(obj) {
-        var _a, _b;
-        const controller = obj.isColor
-            ? (_a = this.gui) === null || _a === void 0 ? void 0 : _a.addColor(obj.baseObj, obj.property).name(obj.name || obj.property)
-            : (_b = this.gui) === null || _b === void 0 ? void 0 : _b.add(obj.baseObj, obj.property, obj.min, obj.max, obj.step).name(obj.name || obj.property);
-        if (obj.callback) {
-            controller === null || controller === void 0 ? void 0 : controller.onChange(obj.callback);
         }
     }
     /**
@@ -49726,10 +49739,11 @@ class ThreeJsScene {
      * @param properties
      */
     addToDebug(properties) {
+        var _a;
         if (!this.debug) {
             throw new Error('Please enable debug for the scene');
         }
-        this.debugElements.push(properties);
+        (_a = this.debugManager) === null || _a === void 0 ? void 0 : _a.addToDebug(properties);
     }
 }
 
@@ -53677,7 +53691,7 @@ class ThreeJsGLTFLoader {
         this.gltfLoader.load(modelPath, onLoad, onProgress, onError);
     }
     setDracoLoader(decoderPath) {
-        import('./DRACOLoader-e836fdd7.js').then(({ DRACOLoader }) => {
+        import('./DRACOLoader-1d7f4a25.js').then(({ DRACOLoader }) => {
             const dracoLoader = new DRACOLoader();
             dracoLoader.setDecoderPath(decoderPath);
             this.gltfLoader.setDRACOLoader(dracoLoader);
