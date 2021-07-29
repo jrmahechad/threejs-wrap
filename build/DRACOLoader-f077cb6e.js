@@ -1,4 +1,4 @@
-import { L as Loader, F as FileLoader, B as BufferGeometry, b as BufferAttribute } from './index-4f2e776a.js';
+import { L as Loader, F as FileLoader, B as BufferGeometry, b as BufferAttribute } from './index-b5ec938d.js';
 
 var DRACOLoader = function ( manager ) {
 

@@ -49671,7 +49671,7 @@ class ThreeJsScene {
      */
     loadControls() {
         if (this.useOrbitControls) {
-            import('./OrbitControls-d1cf9766.js').then(({ OrbitControls }) => {
+            import('./OrbitControls-3f8136e3.js').then(({ OrbitControls }) => {
                 // Controls
                 this.controls = new OrbitControls(this.camera, this.canvas);
                 this.controls.enableDamping = true;
@@ -49748,64 +49748,6 @@ class ThreeJsScene {
             throw new Error('Please enable debug for the scene');
         }
         (_a = this.debugManager) === null || _a === void 0 ? void 0 : _a.addToDebug(properties);
-    }
-}
-
-/**
- * Wrapper for the TextureLoader, includes a LoadingManager
- */
-class ThreeJsTextureLoader {
-    constructor() {
-        this.loadingManager = new LoadingManager();
-        this.textureLoader = new TextureLoader(this.loadingManager);
-    }
-    /**
-     * Gets an instance of ThreeJsTextureLoader
-     * @returns
-     */
-    static getInstance() {
-        if (!ThreeJsTextureLoader.instance) {
-            ThreeJsTextureLoader.instance = new ThreeJsTextureLoader();
-        }
-        return ThreeJsTextureLoader.instance;
-    }
-    /**
-     * Load an array of textures.
-     * @param textures
-     * @returns
-     */
-    getTextures(textures) {
-        return textures.map((texture) => {
-            return this.textureLoader.load(texture);
-        });
-    }
-    /**
-     * Sets the onStart for the LoadingManager.
-     * @param onStart
-     */
-    setOnStart(onStart) {
-        this.loadingManager.onStart = onStart;
-    }
-    /**
-     * Sets the onLoad for the LoadingManager.
-     * @param onLoad
-     */
-    setOnLoad(onLoad) {
-        this.loadingManager.onLoad = onLoad;
-    }
-    /**
-     * Sets the onProgress for the LoadingManager.
-     * @param onProgress
-     */
-    setOnProgress(onProgress) {
-        this.loadingManager.onProgress = onProgress;
-    }
-    /**
-     * Sets the onError for the LoadingManager.
-     * @param onError
-     */
-    setOnError(onError) {
-        this.loadingManager.onError = onError;
     }
 }
 
@@ -50048,6 +49990,90 @@ function __classPrivateFieldSet(receiver, state, value, kind, f) {
     if (typeof state === "function" ? receiver !== state || !f : !state.has(receiver)) throw new TypeError("Cannot write private member to an object whose class did not declare it");
     return (kind === "a" ? f.call(receiver, value) : f ? f.value = value : state.set(receiver, value)), value;
 }
+
+var _a$1, _ThreeJsTextureLoader_instance, _ThreeJsTextureLoader_textureLoader, _ThreeJsTextureLoader_loadingManager;
+/**
+ * Wrapper for the TextureLoader, includes a LoadingManager
+ */
+class ThreeJsTextureLoader {
+    constructor() {
+        _ThreeJsTextureLoader_textureLoader.set(this, void 0);
+        _ThreeJsTextureLoader_loadingManager.set(this, void 0);
+        __classPrivateFieldSet(this, _ThreeJsTextureLoader_loadingManager, new LoadingManager(), "f");
+        __classPrivateFieldSet(this, _ThreeJsTextureLoader_textureLoader, new TextureLoader(__classPrivateFieldGet(this, _ThreeJsTextureLoader_loadingManager, "f")), "f");
+    }
+    /**
+     * Gets an instance of ThreeJsTextureLoader
+     * @returns
+     */
+    static getInstance() {
+        if (!__classPrivateFieldGet(ThreeJsTextureLoader, _a$1, "f", _ThreeJsTextureLoader_instance)) {
+            __classPrivateFieldSet(ThreeJsTextureLoader, _a$1, new ThreeJsTextureLoader(), "f", _ThreeJsTextureLoader_instance);
+        }
+        return __classPrivateFieldGet(ThreeJsTextureLoader, _a$1, "f", _ThreeJsTextureLoader_instance);
+    }
+    /**
+     * Load an array of textures.
+     * @param textures
+     * @returns
+     */
+    loadTextures(textures) {
+        return textures.map((texture) => {
+            return __classPrivateFieldGet(this, _ThreeJsTextureLoader_textureLoader, "f").load(texture);
+        });
+    }
+    /**
+     *
+     * @param textures
+     * @returns
+     */
+    loadTexturesAsync(textures) {
+        const promises = [];
+        textures.forEach((texture) => {
+            promises.push(__classPrivateFieldGet(this, _ThreeJsTextureLoader_textureLoader, "f").loadAsync(texture));
+        });
+        return Promise.all(promises);
+    }
+    /**
+     * Load single texture async
+     * @param url
+     * @param onProgress
+     * @returns
+     */
+    loadAsync(url, onProgress) {
+        return __classPrivateFieldGet(this, _ThreeJsTextureLoader_textureLoader, "f").loadAsync(url, onProgress);
+    }
+    /**
+     * Sets the onStart for the LoadingManager.
+     * @param onStart
+     */
+    setOnStart(onStart) {
+        __classPrivateFieldGet(this, _ThreeJsTextureLoader_loadingManager, "f").onStart = onStart;
+    }
+    /**
+     * Sets the onLoad for the LoadingManager.
+     * @param onLoad
+     */
+    setOnLoad(onLoad) {
+        __classPrivateFieldGet(this, _ThreeJsTextureLoader_loadingManager, "f").onLoad = onLoad;
+    }
+    /**
+     * Sets the onProgress for the LoadingManager.
+     * @param onProgress
+     */
+    setOnProgress(onProgress) {
+        __classPrivateFieldGet(this, _ThreeJsTextureLoader_loadingManager, "f").onProgress = onProgress;
+    }
+    /**
+     * Sets the onError for the LoadingManager.
+     * @param onError
+     */
+    setOnError(onError) {
+        __classPrivateFieldGet(this, _ThreeJsTextureLoader_loadingManager, "f").onError = onError;
+    }
+}
+_a$1 = ThreeJsTextureLoader, _ThreeJsTextureLoader_textureLoader = new WeakMap(), _ThreeJsTextureLoader_loadingManager = new WeakMap();
+_ThreeJsTextureLoader_instance = { value: void 0 };
 
 var GLTFLoader = ( function () {
 
@@ -53949,7 +53975,7 @@ class ThreeJsGLTFLoader {
      * @param decoderPath
      */
     setDracoLoader(decoderPath) {
-        import('./DRACOLoader-6615ae5c.js').then(({ DRACOLoader }) => {
+        import('./DRACOLoader-f077cb6e.js').then(({ DRACOLoader }) => {
             // console.log("DRACOLoader", DRACOLoader);
             const dracoLoader = new DRACOLoader();
             dracoLoader.setDecoderPath(decoderPath);

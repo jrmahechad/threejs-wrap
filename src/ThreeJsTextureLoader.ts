@@ -1,15 +1,20 @@
-import * as THREE from 'three';
+import {
+  LoadingManager,
+  TextureLoader as ThreeJsTexture,
+  Texture
+} from 'three';
 
 /**
  * Wrapper for the TextureLoader, includes a LoadingManager
  */
 export default class ThreeJsTextureLoader {
-  private static instance: ThreeJsTextureLoader;
-  private textureLoader: THREE.TextureLoader;
-  private loadingManager: THREE.LoadingManager;
+  static #instance: ThreeJsTextureLoader;
+  #textureLoader: ThreeJsTexture;
+  #loadingManager: LoadingManager;
+
   constructor() {
-    this.loadingManager = new THREE.LoadingManager();
-    this.textureLoader = new THREE.TextureLoader(this.loadingManager);
+    this.#loadingManager = new LoadingManager();
+    this.#textureLoader = new ThreeJsTexture(this.#loadingManager);
   }
 
   /**
@@ -17,11 +22,11 @@ export default class ThreeJsTextureLoader {
    * @returns
    */
   public static getInstance(): ThreeJsTextureLoader {
-    if (!ThreeJsTextureLoader.instance) {
-      ThreeJsTextureLoader.instance = new ThreeJsTextureLoader();
+    if (!ThreeJsTextureLoader.#instance) {
+      ThreeJsTextureLoader.#instance = new ThreeJsTextureLoader();
     }
 
-    return ThreeJsTextureLoader.instance;
+    return ThreeJsTextureLoader.#instance;
   }
 
   /**
@@ -29,10 +34,37 @@ export default class ThreeJsTextureLoader {
    * @param textures
    * @returns
    */
-  getTextures(textures: string[]) {
+  loadTextures(textures: string[]): Texture[] {
     return textures.map((texture) => {
-      return this.textureLoader.load(texture);
+      return this.#textureLoader.load(texture);
     });
+  }
+
+  /**
+   *
+   * @param textures
+   * @returns
+   */
+  loadTexturesAsync(textures: string[]) {
+    const promises: any[] = [];
+    textures.forEach((texture) => {
+      promises.push(this.#textureLoader.loadAsync(texture));
+    });
+
+    return Promise.all(promises);
+  }
+
+  /**
+   * Load single texture async
+   * @param url
+   * @param onProgress
+   * @returns
+   */
+  loadAsync(
+    url: string,
+    onProgress?: (event: ProgressEvent) => void
+  ): Promise<Texture> {
+    return this.#textureLoader.loadAsync(url, onProgress);
   }
 
   /**
@@ -40,7 +72,7 @@ export default class ThreeJsTextureLoader {
    * @param onStart
    */
   setOnStart(onStart: (url: string, loaded: number, total: number) => void) {
-    this.loadingManager.onStart = onStart;
+    this.#loadingManager.onStart = onStart;
   }
 
   /**
@@ -48,7 +80,7 @@ export default class ThreeJsTextureLoader {
    * @param onLoad
    */
   setOnLoad(onLoad: () => void) {
-    this.loadingManager.onLoad = onLoad;
+    this.#loadingManager.onLoad = onLoad;
   }
 
   /**
@@ -58,7 +90,7 @@ export default class ThreeJsTextureLoader {
   setOnProgress(
     onProgress: (url: string, loaded: number, total: number) => void
   ) {
-    this.loadingManager.onProgress = onProgress;
+    this.#loadingManager.onProgress = onProgress;
   }
 
   /**
@@ -66,6 +98,8 @@ export default class ThreeJsTextureLoader {
    * @param onError
    */
   setOnError(onError: (url: string) => void) {
-    this.loadingManager.onError = onError;
+    this.#loadingManager.onError = onError;
   }
 }
+
+export { ThreeJsTextureLoader };
