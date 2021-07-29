@@ -27,7 +27,11 @@
   <body>
     <canvas class="webgl"></canvas>
     <script type="module">
-      import { ThreeJsScene, ThreeJsGLTFLoader } from '../build/index.js';
+      import {
+        ThreeJsScene,
+        ThreeJsGLTFLoader,
+        AnimationMixer
+      } from '../build/index.js';
       const canvas = document.querySelector('canvas.webgl');
       const scene = new ThreeJsScene(canvas, { isFullScreen: true });
       const THREE = scene.THREE;
@@ -37,9 +41,25 @@
       scene.start();
 
       const gltfLoader = ThreeJsGLTFLoader.getInstance();
+
+      let mixer;
+      let animations = [];
+      let currentAnimationIndex = 0;
+
       gltfLoader.setDracoLoader('./draco/');
       gltfLoader.getModel('./models/Fox/glTF/Fox.gltf', (gltf) => {
         gltf.scene.scale.set(0.025, 0.025, 0.025);
+
+        mixer = new AnimationMixer(gltf);
+        animations = mixer.actionsArray;
+        for (const animation of animations) {
+          animation.setLoop(THREE.LoopRepeat);
+        }
+
+        animations[currentAnimationIndex].play();
+
+        scene.setAnimationMixer(mixer);
+
         scene.add(gltf.scene);
       });
 

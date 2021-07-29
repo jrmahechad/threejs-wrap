@@ -43255,7 +43255,7 @@ class AnimationAction {
 
 }
 
-class AnimationMixer extends EventDispatcher {
+class AnimationMixer$1 extends EventDispatcher {
 
 	constructor( root ) {
 
@@ -44011,7 +44011,7 @@ class AnimationMixer extends EventDispatcher {
 
 }
 
-AnimationMixer.prototype._controlInterpolantsResultBuffer = new Float32Array( 1 );
+AnimationMixer$1.prototype._controlInterpolantsResultBuffer = new Float32Array( 1 );
 
 class Uniform {
 
@@ -48941,7 +48941,7 @@ var THREE = /*#__PURE__*/Object.freeze({
 	AmbientLightProbe: AmbientLightProbe,
 	AnimationClip: AnimationClip,
 	AnimationLoader: AnimationLoader,
-	AnimationMixer: AnimationMixer,
+	AnimationMixer: AnimationMixer$1,
 	AnimationObjectGroup: AnimationObjectGroup,
 	AnimationUtils: AnimationUtils,
 	ArcCurve: ArcCurve,
@@ -52327,6 +52327,8 @@ class ThreeJsScene {
         this.useOrbitControls = useOrbitControls;
         this.debug = debug;
         this.animatedObjects = [];
+        this.previousTime = 0;
+        this.lastUpdated = 0;
         this.scene = new Scene();
         this.canvas = canvas;
         this.clock = new Clock();
@@ -52404,11 +52406,16 @@ class ThreeJsScene {
         }
         this.scene.add(obj);
     }
+    setAnimationMixer(mixer) {
+        this.animationMixer = mixer;
+    }
     /**
      * The animation loop.
      */
     loop() {
         const elapsedTime = this.clock.getElapsedTime();
+        const deltaTime = elapsedTime - this.previousTime;
+        this.previousTime = elapsedTime;
         // Update controls
         if (this.controls) {
             this.controls.update();
@@ -52417,6 +52424,11 @@ class ThreeJsScene {
             this.mouseManager &&
             this.mouseManager.mouseMoving) {
             this.selectionMananer.checkSelectableObjects(this.mouseManager.mouse);
+        }
+        if (this.animationMixer) {
+            if (this.animationMixer) {
+                this.animationMixer.update(deltaTime);
+            }
         }
         this.checkAnimatedObjects(elapsedTime);
         // Render
@@ -52438,7 +52450,7 @@ class ThreeJsScene {
      */
     loadControls() {
         if (this.useOrbitControls) {
-            import('./OrbitControls-66e5e6cd.js').then(({ OrbitControls }) => {
+            import('./OrbitControls-d5f04471.js').then(({ OrbitControls }) => {
                 // Controls
                 this.controls = new OrbitControls(this.camera, this.canvas);
                 this.controls.enableDamping = true;
@@ -56502,7 +56514,7 @@ class ThreeJsGLTFLoader {
      * @param decoderPath
      */
     setDracoLoader(decoderPath) {
-        import('./DRACOLoader-90f1181b.js').then(({ DRACOLoader }) => {
+        import('./DRACOLoader-c2e4fc12.js').then(({ DRACOLoader }) => {
             // console.log("DRACOLoader", DRACOLoader);
             const dracoLoader = new DRACOLoader();
             dracoLoader.setDecoderPath(decoderPath);
@@ -56513,4 +56525,39 @@ class ThreeJsGLTFLoader {
 _a = ThreeJsGLTFLoader, _ThreeJsGLTFLoader_gltfLoader = new WeakMap();
 _ThreeJsGLTFLoader_instance = { value: void 0 };
 
-export { BufferGeometry as B, EventDispatcher as E, FileLoader as F, Loader as L, MOUSE as M, Quaternion as Q, Spherical as S, TOUCH as T, Vector3 as V, Vector2 as a, BufferAttribute as b, ThreeJsScene as c, ThreeJsTextureLoader as d, ThreeJsGLTFLoader as e, ThreeJSObject as f };
+var _AnimationMixer_instances, _AnimationMixer_mixer, _AnimationMixer_model, _AnimationMixer_actions, _AnimationMixer_buildAnimations;
+/**
+ * Wrapper for AnimationMixer.
+ */
+class AnimationMixer {
+    constructor(model) {
+        _AnimationMixer_instances.add(this);
+        _AnimationMixer_mixer.set(this, void 0);
+        _AnimationMixer_model.set(this, void 0);
+        _AnimationMixer_actions.set(this, void 0);
+        __classPrivateFieldSet(this, _AnimationMixer_model, model, "f");
+        __classPrivateFieldSet(this, _AnimationMixer_mixer, new AnimationMixer$1(__classPrivateFieldGet(this, _AnimationMixer_model, "f").scene), "f");
+        __classPrivateFieldSet(this, _AnimationMixer_actions, new Map(), "f");
+        __classPrivateFieldGet(this, _AnimationMixer_instances, "m", _AnimationMixer_buildAnimations).call(this);
+    }
+    get actions() {
+        return __classPrivateFieldGet(this, _AnimationMixer_actions, "f");
+    }
+    get actionsArray() {
+        return Array.from(__classPrivateFieldGet(this, _AnimationMixer_actions, "f").values());
+    }
+    hasAnimations() {
+        return __classPrivateFieldGet(this, _AnimationMixer_actions, "f").size > 0;
+    }
+    update(deltaTime) {
+        __classPrivateFieldGet(this, _AnimationMixer_mixer, "f").update(deltaTime);
+    }
+}
+_AnimationMixer_mixer = new WeakMap(), _AnimationMixer_model = new WeakMap(), _AnimationMixer_actions = new WeakMap(), _AnimationMixer_instances = new WeakSet(), _AnimationMixer_buildAnimations = function _AnimationMixer_buildAnimations() {
+    for (const animation of __classPrivateFieldGet(this, _AnimationMixer_model, "f").animations) {
+        const clip = __classPrivateFieldGet(this, _AnimationMixer_mixer, "f").clipAction(animation);
+        __classPrivateFieldGet(this, _AnimationMixer_actions, "f").set(animation.name, clip);
+    }
+};
+
+export { AnimationMixer as A, BufferGeometry as B, EventDispatcher as E, FileLoader as F, Loader as L, MOUSE as M, Quaternion as Q, Spherical as S, TOUCH as T, Vector3 as V, Vector2 as a, BufferAttribute as b, ThreeJsScene as c, ThreeJsTextureLoader as d, ThreeJsGLTFLoader as e, ThreeJSObject as f };

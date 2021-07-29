@@ -6,6 +6,7 @@ import { default as SelectionManager } from './SelectionManager';
 import { default as TweakManager, DebugObject } from './TweakManager';
 
 import { default as MouseManager } from './MouseManager';
+import { default as AnimationMixer } from './AnimationMixer';
 
 /**
  * Wrapper for the ThreeJs Scene.
@@ -24,10 +25,14 @@ export default class ThreeJsScene {
   public mouseManager?: MouseManager;
   public debug: boolean;
   public tweakManager?: TweakManager;
+  public animationMixer?: AnimationMixer;
 
   public selectionMananer?: SelectionManager;
 
   private animatedObjects: ThreeJsObject[];
+
+  private previousTime: number;
+  private lastUpdated: number;
 
   constructor(
     canvas: HTMLCanvasElement,
@@ -48,6 +53,8 @@ export default class ThreeJsScene {
     this.useOrbitControls = useOrbitControls;
     this.debug = debug;
     this.animatedObjects = [];
+    this.previousTime = 0;
+    this.lastUpdated = 0;
 
     this.scene = new THREE.Scene();
     this.canvas = canvas;
@@ -148,11 +155,17 @@ export default class ThreeJsScene {
     this.scene.add(obj);
   }
 
+  setAnimationMixer(mixer: AnimationMixer) {
+    this.animationMixer = mixer;
+  }
+
   /**
    * The animation loop.
    */
   loop() {
     const elapsedTime = this.clock.getElapsedTime();
+    const deltaTime = elapsedTime - this.previousTime;
+    this.previousTime = elapsedTime;
 
     // Update controls
     if (this.controls) {
@@ -165,6 +178,14 @@ export default class ThreeJsScene {
       this.mouseManager.mouseMoving
     ) {
       this.selectionMananer.checkSelectableObjects(this.mouseManager.mouse);
+    }
+
+    // TODO: Handle change animations
+
+    if (this.animationMixer) {
+      if (this.animationMixer) {
+        this.animationMixer.update(deltaTime);
+      }
     }
 
     this.checkAnimatedObjects(elapsedTime);
