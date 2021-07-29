@@ -3,8 +3,8 @@ import { getDevicePixelRatio } from './utils';
 import { sceneDefaults, events } from './constants';
 import { default as ThreeJsObject } from './ThreeJsObject';
 import { default as SelectionManager } from './SelectionManager';
-import { default as DebugManager } from './DebugManager';
-import { DebugObject } from './ThreeJsObject';
+import { default as TweakManager, DebugObject } from './TweakManager';
+
 import { default as MouseManager } from './MouseManager';
 
 /**
@@ -23,7 +23,7 @@ export default class ThreeJsScene {
   public useOrbitControls: boolean;
   public mouseManager?: MouseManager;
   public debug: boolean;
-  public debugManager?: DebugManager;
+  public tweakManager?: TweakManager;
 
   public selectionMananer?: SelectionManager;
 
@@ -55,7 +55,7 @@ export default class ThreeJsScene {
     this.clock = new THREE.Clock();
 
     if (this.debug) {
-      this.debugManager = new DebugManager();
+      this.tweakManager = new TweakManager();
     }
 
     this.rendererSizes = this.buildSizes();
@@ -285,6 +285,6 @@ export default class ThreeJsScene {
       throw new Error('Please enable debug for the scene');
     }
 
-    this.debugManager?.addToDebug(properties);
+    this.tweakManager?.add(properties);
   }
 }

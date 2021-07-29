@@ -1,21 +1,10 @@
 import { Object3D } from 'three';
 import * as THREE from 'three';
+import { DebugObject } from './TweakManager';
 
 interface BaseObject {
   create(): Object3D;
   update(elapsedTime: number): void;
-}
-
-export interface DebugObject {
-  baseObj: Object;
-  property: string;
-  min?: number;
-  max?: number;
-  step?: number;
-  name?: string;
-  onChange?: number;
-  isColor: boolean;
-  callback: (value?: any) => void;
 }
 
 /**
@@ -23,8 +12,8 @@ export interface DebugObject {
  */
 export default class ThreeJSObject implements BaseObject {
   public object3d: Object3D;
+  public THREE: Object;
   public params: Object;
-  private THREE: Object;
 
   constructor(params = {}) {
     this.params = params;
